@@ -16,6 +16,8 @@ from PIL import Image
 from games.m2b import MoveToBeacon
 from agents.m2b.drl import DRLAgent
 
+from plot import plot_scores, show_screen, moving_average
+
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if torch.cuda.is_available():
@@ -25,42 +27,6 @@ if torch.cuda.is_available():
 resize = T.Compose([T.ToPILImage(),
                     T.Resize(40, interpolation=Image.CUBIC),
                     T.ToTensor()])
-
-
-# set up matplotlib
-is_ipython = 'inline' in matplotlib.get_backend()
-if is_ipython:
-    from IPython import display
-
-
-
-episode_scores = []
-
-def show_screen(screen, name):
-    plt.figure(2)
-    plt.imshow(screen.cpu().squeeze(0).permute(1, 2, 0).numpy(),
-            interpolation='none')
-    plt.title(name)
-    plt.show()
-
-def moving_average(x, w):
-    return np.convolve(x, np.ones(w), 'valid') / w
-
-
-def plot_scores(map_name=""):
-    plt.figure(1)
-    plt.clf()
-    # scores_t = torch.tensor(episode_scores, dtype=torch.float)
-    plt.title('Training {}...'.format(map_name))
-    plt.xlabel('Episode')
-    plt.ylabel('Score')
-    plt.plot(moving_average(episode_scores, 2))
-    plt.plot(moving_average(episode_scores, 20))
-
-    plt.pause(0.001)  # pause a bit so that plots are updated
-    if is_ipython:
-        display.clear_output(wait=True)
-        display.display(plt.gcf())                       
 
 def get_screen(plenv, device):
 
@@ -79,6 +45,59 @@ def get_screen(plenv, device):
     screen = torch.from_numpy(screen)
 
     return resize(screen).unsqueeze(0).to(device)
+
+# # set up matplotlib
+# is_ipython = 'inline' in matplotlib.get_backend()
+# if is_ipython:
+#     from IPython import display
+
+
+
+episode_scores = []
+
+# def show_screen(screen, name):
+#     plt.figure(2)
+#     plt.imshow(screen.cpu().squeeze(0).permute(1, 2, 0).numpy(),
+#             interpolation='none')
+#     plt.title(name)
+#     plt.show()
+
+# def moving_average(x, w):
+#     return np.convolve(x, np.ones(w), 'valid') / w
+
+
+# def plot_scores(map_name=""):
+#     plt.figure(1)
+#     plt.clf()
+#     # scores_t = torch.tensor(episode_scores, dtype=torch.float)
+#     plt.title('Training {}...'.format(map_name))
+#     plt.xlabel('Episode')
+#     plt.ylabel('Score')
+#     plt.plot(moving_average(episode_scores, 2))
+#     plt.plot(moving_average(episode_scores, 20))
+
+#     plt.pause(0.001)  # pause a bit so that plots are updated
+#     if is_ipython:
+#         display.clear_output(wait=True)
+#         display.display(plt.gcf())                       
+
+# def get_screen(plenv, device):
+
+#     """
+#     obs = [x,y,3] RGB array
+#     """
+#     observation = plenv.getScreenRGB()
+
+#     # flip and rotate 90 deg
+#     flipped = np.rot90(np.flip(observation, axis=1), 1)  
+
+#     #Transpose it into torch order (CHW).
+#     screen = flipped.transpose((2, 0, 1))
+
+#     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
+#     screen = torch.from_numpy(screen)
+
+#     return resize(screen).unsqueeze(0).to(device)
 
 
 class NaiveAgent():
@@ -152,7 +171,7 @@ def main(argv):
 
         print("episode:{} score:{}".format( i_episode, game.getScore() ))       
         episode_scores.append(float(game.getScore()))
-        plot_scores("MoveToBeacon")
+        plot_scores(episode_scores, "MoveToBeacon")
         
 
 

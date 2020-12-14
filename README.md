@@ -18,3 +18,24 @@ python3 -m pip install -r requirements.txt
 
 ## runing the move to beacon simulation
 `python runner_ple.py`
+
+
+
+0 0
+0 1
+0 1
+0 0
+0 1
+0 1
+0 0
+0 2
+0 0
+0 0
+0 1
+0 1
+0 1
+0 2
+0 0
+0 0
+
+
