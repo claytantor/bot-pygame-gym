@@ -74,7 +74,7 @@ class Trainer:
 def main(argv): 
     print("open ai gym")
     t = Trainer()
-    t.train(3000)
+    t.train(30000)
    
         
 if __name__ == "__main__":

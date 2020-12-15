@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 import torch
@@ -6,6 +7,41 @@ import torch.nn.functional as F
 
 from torch.optim.lr_scheduler import StepLR
 from torch.autograd import Variable
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+use_cuda = torch.cuda.is_available()
+FloatTensor = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if use_cuda else torch.LongTensor
+ByteTensor = torch.cuda.ByteTensor if use_cuda else torch.ByteTensor
+Tensor = FloatTensor
+
+# hyper parameters
+EPISODES = 200  # number of episodes
+EPS_START = 0.9  # e-greedy threshold start value
+EPS_END = 0.05  # e-greedy threshold end value
+EPS_DECAY = 200  # e-greedy threshold decay
+GAMMA = 0.8  # Q-learning discount factor
+LR = 0.001  # NN optimizer learning rate
+HIDDEN_LAYER = 256  # NN hidden layer size
+BATCH_SIZE = 64  # Q-learning batch size
+
+
+class ReplayMemory:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.memory = []
+
+    def push(self, transition):
+        self.memory.append(transition)
+        if len(self.memory) > self.capacity:
+            del self.memory[0]
+
+    def sample(self, batch_size):
+        return random.sample(self.memory, batch_size)
+
+    def __len__(self):
+        return len(self.memory)
+
 
 class Agent(nn.Module):
     def __init__(self, env, optimizer_type='Adam'):
@@ -21,12 +57,13 @@ class Agent(nn.Module):
         self.momentum = 0.9
         self.gamma = 0.9
         self.lr_step=100
-        # self.max_memory_size=50000
+
+        self.steps_done = 0
 
         self.l1 = nn.Linear(in_features=self.observation_space_size, out_features=self.hidden_size)
         self.l2 = nn.Linear(in_features=self.hidden_size, out_features=self.action_space.n)
-        self.uniform_linear_layer(self.l1)
-        self.uniform_linear_layer(self.l2)
+        self.uniform_linear_layer(self.l1.to(device=device))
+        self.uniform_linear_layer(self.l2.to(device=device))
 
         # optimizer
         # self.momentum = momentum
@@ -58,8 +95,8 @@ class Agent(nn.Module):
         if not isinstance(ids, (list, np.ndarray)):
             raise ValueError("ids must be 1-D list or array")
         batch_size = len(ids)
-        ids = torch.LongTensor(ids).view(batch_size, 1)
-        out_tensor = Variable(torch.FloatTensor(batch_size, nb_digits))
+        ids = LongTensor(ids).view(batch_size, 1)
+        out_tensor = Variable(FloatTensor(batch_size, nb_digits))
         out_tensor.data.zero_()
         out_tensor.data.scatter_(dim=1, index=ids, value=1.)
         return out_tensor
@@ -70,8 +107,10 @@ class Agent(nn.Module):
         else:
             agent_out = self(s).detach()
             _, max_index = torch.max(agent_out, 0)
-            return max_index.data.numpy().tolist()
+            return max_index.data.cpu().numpy().tolist()
 
+
+            
     def update(self, agent_action, last_state, step_state, reward, done, probability):
         # calculate target and loss
         target_q = reward + 0.99 * torch.max(self(step_state).detach()) # detach from the computing flow
