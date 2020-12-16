@@ -15,18 +15,18 @@ GREEN = (11, 252, 3)
 RED = (252, 3, 3)
 YELLOW = (248, 252, 3)
 
-# GAME_FONT = pygame.font.SysFont('droidsansmonoforpowerline', 10)
-
 class PersonPlayer(pygame.sprite.Sprite):
     def __init__(self,
-                SCREEN_WIDTH, SCREEN_HEIGHT,
-                image_assets, rng):
+                SCREEN_WIDTH, 
+                SCREEN_HEIGHT,
+                image_assets, 
+                rng):
+
 
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.action_direction = ''
         
-
         pygame.sprite.Sprite.__init__(self)
 
         self.image_assets = image_assets
@@ -61,7 +61,6 @@ class PersonPlayer(pygame.sprite.Sprite):
 
         action_txt_img = GAME_FONT.render('{}'.format(self.action_direction), True, self.action_color)
         screen.blit(action_txt_img, (3, 13))
-
 
         screen.blit(self.image, self.rect.center)
     
@@ -120,29 +119,6 @@ class PersonPlayer(pygame.sprite.Sprite):
 
         else:
             self.action_color = RED
-
-        # new_x = switcher[direction][0]
-        # new_y = switcher[direction][1]
-
-        # if self.pos_x >= 0 and self.pos_x<self.SCREEN_WIDTH-self.width-1 and new_x == MOVE_SIZE:
-        #     self.pos_x += new_x
-        #     self.action_color = YELLOW
-
-        # elif self.pos_x > MOVE_SIZE and self.pos_x<=self.SCREEN_WIDTH-self.width and new_x == -MOVE_SIZE:
-        #     self.pos_x += new_x
-        #     self.action_color = YELLOW
-         
-        # elif self.pos_y >= 0 and self.pos_y<self.SCREEN_HEIGHT-self.height-MOVE_SIZE and new_y == MOVE_SIZE:
-        #     self.pos_y += new_y
-        #     self.action_color = YELLOW
-
-        # elif self.pos_y > MOVE_SIZE and self.pos_y<=self.SCREEN_HEIGHT-self.height and new_y == -MOVE_SIZE:
-        #     self.pos_y += new_y
-        #     self.action_color = YELLOW
-
-        # else:
-        #     self.action_color = RED
-
 
 
 class Beacon(pygame.sprite.Sprite):
@@ -216,8 +192,6 @@ class Beacon(pygame.sprite.Sprite):
         return self.rect.colliderect(sprite.rect)
 
     
-
-
 class Background():
 
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -236,7 +210,9 @@ class Background():
 
 class MoveToBeacon(PyGameWrapper):
 
-    def __init__(self, width=128, height=128):
+    def __init__(self, map_info,  width=128, height=128):
+
+        self.map_info = map_info
 
         self.actions = {
             "up": K_UP, 
@@ -246,6 +222,7 @@ class MoveToBeacon(PyGameWrapper):
         }
 
         PyGameWrapper.__init__(self, width, height, actions=self.actions)
+        PyGameWrapper._setup(self)
  
         self.init_pos = (
             int(self.width * 0.2),
@@ -264,6 +241,9 @@ class MoveToBeacon(PyGameWrapper):
 
         self.score = 0.0
         self.event_key = ''
+
+
+        self.init()
 
 
     def getActionSet(self):
@@ -382,6 +362,4 @@ class MoveToBeacon(PyGameWrapper):
         self.beacon.draw(self.screen)
         self.player.draw(self.screen)
 
-        # GAME_FONT = pygame.font.SysFont('droidsansmonoforpowerline', 10)
-        # event_txt_img = GAME_FONT.render('{}'.format(self.event_key), True, WHITE)
-        # self.screen.blit(event_txt_img, (3, 23))
+

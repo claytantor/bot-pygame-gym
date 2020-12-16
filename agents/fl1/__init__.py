@@ -26,23 +26,6 @@ HIDDEN_LAYER = 256  # NN hidden layer size
 BATCH_SIZE = 64  # Q-learning batch size
 
 
-class ReplayMemory:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.memory = []
-
-    def push(self, transition):
-        self.memory.append(transition)
-        if len(self.memory) > self.capacity:
-            del self.memory[0]
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
-
 class Agent(nn.Module):
     def __init__(self, env, optimizer_type='Adam'):
         super(Agent, self).__init__()
@@ -73,9 +56,6 @@ class Agent(nn.Module):
             self.optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, momentum=self.momentum, nesterov=True)
         else:
             self.optimizer = torch.optim.RMSprop(self.parameters(), lr=self.learning_rate)
-
-        # # try to oprimize learning rate
-        # self.scheduler = StepLR(self.optimizer, step_size=self.lr_step, gamma=self.gamma)
 
     
     def forward(self, state):
@@ -109,8 +89,7 @@ class Agent(nn.Module):
             _, max_index = torch.max(agent_out, 0)
             return max_index.data.cpu().numpy().tolist()
 
-
-            
+      
     def update(self, agent_action, last_state, step_state, reward, done, probability):
         # calculate target and loss
         target_q = reward + 0.99 * torch.max(self(step_state).detach()) # detach from the computing flow
@@ -120,4 +99,3 @@ class Agent(nn.Module):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        # self.scheduler.step()

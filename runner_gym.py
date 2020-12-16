@@ -1,4 +1,5 @@
 import os, sys
+from gym.utils.seeding import np_random
 import numpy as np
 import time
 import torch
@@ -12,10 +13,11 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
+from envs.flnew import FrozenLakeEnv
+from envs.m2bpg import MoveToBeaconPygameEnv
+
 from torch.autograd import Variable
-
 from agents.fl1 import Agent
-
 from plot import plot_scores, show_screen, moving_average
 
 # if gpu is to be used
@@ -23,8 +25,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if torch.cuda.is_available():
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
-ENV_NAME = 'FrozenLake-v0'
-env = gym.make(ENV_NAME)
+ENV_NAME = 'MoveToBeaconEnv'
+# env = gym.make(ENV_NAME)
+
+env = MoveToBeaconPygameEnv(grid_size=8)
 
 class Trainer:
     def __init__(self):
@@ -35,40 +39,43 @@ class Trainer:
     
     def train(self, episodes):
         
-        episode_done = False
-        reward_val = 0
+        
+        
 
         for e_i in range(episodes):
+            # print("=========episode #:{}==========".format(e_i))
             state = env.reset()
-            step_i = 0
-            while step_i < 200:
+            episode_done = False
+            reward_val = 0
+            while not episode_done:
                 
                 # perform chosen action
                 action = self.agent.choose_action(state)
-                # print(s, a)
+                # print(step_i, action)
 
-                state_1, reward_val, episode_done, _ = env.step(action)
-                if episode_done == True and reward_val == 0: reward_val = -1
-                
-                self.agent.update(action, state, state_1, reward_val, episode_done, _)
+                state_1, reward_val, episode_done, p = env.step(action)
+
+                if episode_done == True: 
+                    if reward_val < 1: 
+                        # print("FAIL...", reward_val)
+                        self.success.append(0)
+                        reward_val=-1
+                    else:
+                        # print("GOAL...", reward_val)
+                        self.success.append(1)
+                               
+                self.agent.update(action, state, state_1, reward_val, episode_done, p)
                 
                 # update state
                 state = state_1
-                step_i += 1
-                if episode_done == True: break
-            
-            # append results onto report lists
-            if episode_done == True and reward_val > 0:
-                self.success.append(1)
-            else:
-                self.success.append(0)
-            self.episodes_steps_list.append(step_i)
-        
-            if e_i % 100 == 0:
+                # time.sleep(0.1)
+       
+            # self.episodes_steps_list.append(step_i)
+   
+            if e_i % 100 == 0 and e_i != 0:
                 success_percent = sum(self.success[-100:])
                 print("success rate:{} episode:{}".format(success_percent, e_i))
-                self.episode_scores.append(success_percent)
-                plot_scores(self.episode_scores, ENV_NAME)
+
             
 
 def main(argv): 
