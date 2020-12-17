@@ -1,6 +1,8 @@
 import math
 import numpy as np
 
+from gym import error, spaces
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,6 +24,11 @@ EPS_DECAY = 200  # e-greedy threshold decay
 GAMMA = 0.8  # Q-learning discount factor
 LR = 0.001  # NN optimizer learning rate
 BATCH_SIZE = 64  # Q-learning batch size
+
+# two types of observation spaces
+# spaces.Box and 
+
+
 
 class Agent(nn.Module):
     def __init__(self, env, optimizer_type='Adam'):
