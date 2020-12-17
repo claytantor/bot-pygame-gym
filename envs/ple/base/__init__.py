@@ -1,2 +1,0 @@
-from .pygamewrapper import PyGameWrapper
-

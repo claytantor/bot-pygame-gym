@@ -5,24 +5,17 @@ from pygame.constants import KEYDOWN, KEYUP, K_F15
 
 class PyGameWrapper(object):
     """PyGameWrapper  class
-
     ple.games.base.PyGameWrapper(width, height, actions={})
-
     This :class:`PyGameWrapper` class sets methods all games require. It should be subclassed when creating new games.
-
     Parameters
     ----------
     width: int
         The width of the game screen.
-
     height: int
         The height of the game screen.
-
     actions: dict
         Contains possible actions that the game responds too. The dict keys are used by the game, while the values are `pygame.constants` referring the keys.
-
         Possible actions dict:
-
         >>> from pygame.constants import K_w, K_s
         >>> actions = {
         >>>     "up": K_w,
@@ -89,12 +82,10 @@ class PyGameWrapper(object):
     def getScreenRGB(self):
         """
         Returns the current game screen in RGB format.
-
         Returns
         --------
         numpy uint8 array
             Returns a numpy array with the shape (width, height, 3).
-
         """
 
         return pygame.surfarray.array3d(
@@ -108,14 +99,11 @@ class PyGameWrapper(object):
 
     def adjustRewards(self, rewards):
         """
-
         Adjusts the rewards the game gives the agent
-
         Parameters
         ----------
         rewards : dict
             A dictonary of reward events to float rewards. Only updates if key matches those specificed in the init function.
-
         """
         for key in rewards.keys():
             if key in self.rewards:
@@ -132,44 +120,36 @@ class PyGameWrapper(object):
     def getGameState(self):
         """
         Gets a non-visual state representation of the game.
-
         Returns
         -------
         dict or None
             dict if the game supports it and None otherwise.
-
         """
         return None
 
     def getScreenDims(self):
         """
         Gets the screen dimensions of the game in tuple form.
-
         Returns
         -------
         tuple of int
             Returns tuple as follows (width, height).
-
         """
         return self.screen_dim
 
     def getActions(self):
         """
         Gets the actions used within the game.
-
         Returns
         -------
         list of `pygame.constants`
-
         """
         return self.actions.values()
 
     def init(self):
         """
         This is used to initialize the game, such reseting the score, lives, and player position.
-
         This is game dependent.
-
         """
         raise NotImplementedError("Please override this method")
 
@@ -182,8 +162,6 @@ class PyGameWrapper(object):
     def getScore(self):
         """
         Return the current score of the game.
-
-
         Returns
         -------
         int
@@ -194,24 +172,19 @@ class PyGameWrapper(object):
     def game_over(self):
         """
         Gets the status of the game, returns True if game has hit a terminal state. False otherwise.
-
         This is game dependent.
-
         Returns
         -------
         bool
-
         """
         raise NotImplementedError("Please override this method")
 
     def step(self, dt):
         """
         This method steps the game forward one step in time equal to the dt parameter. The game does not run unless this method is called.
-
         Parameters
         ----------
         dt : integer
             This is the amount of time elapsed since the last frame in milliseconds.
-
         """
         raise NotImplementedError("Please override this method")

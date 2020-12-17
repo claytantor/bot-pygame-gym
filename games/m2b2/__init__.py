@@ -4,7 +4,7 @@ import numpy as np
 import pygame
 
 from pygame.constants import K_UP, K_DOWN, K_RIGHT, K_LEFT
-from envs.ple.base import PyGameWrapper
+from envs.base import PyGameWrapper
 
 MOVE_SIZE = 8
 BEACON_MOVE_SIZE = 0

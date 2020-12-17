@@ -3,22 +3,13 @@ from gym.utils.seeding import np_random
 import numpy as np
 import time
 import torch
-import matplotlib
-import matplotlib.pyplot as plt
 import gym
 import argparse
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import torchvision.transforms as T
-
-from envs.flnew import FrozenLakeEnv
 from envs.m2bpg import MoveToBeaconPygameEnv
 
 from torch.autograd import Variable
-from agents import fl1, dqn
+from agents import dqn
 
 from plot import plot_scores, show_screen, moving_average
 
@@ -27,26 +18,18 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if torch.cuda.is_available():
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
-# ENV_NAME = 'MoveToBeaconEnv'
-# env = gym.make(ENV_NAME)
-
-# env = MoveToBeaconPygameEnv(grid_size=8)
-# print("Action space: ", env.action_space)
-# print("Observation space: ", env.observation_space)
-
 class Trainer:
     def __init__(self, agent, env):
-        # self.agent = Agent(env, optimizer_type="Adam")
         self.agent = agent
         self.env = env
         self.success = []
         self.episodes_steps_list = []
         self.episode_scores = []
     
+
     def train(self, episodes):
         
         for e_i in range(episodes):
-            # print("=========episode #:{}==========".format(e_i))
             state = self.env.reset()
             episode_done = False
             reward_val = 0
@@ -54,7 +37,6 @@ class Trainer:
                 
                 # perform chosen action
                 action = self.agent.choose_action(state)
-                # print(step_i, action)
 
                 state_1, reward_val, episode_done, p = self.env.step(action)
 
@@ -71,18 +53,18 @@ class Trainer:
                 
                 # update state
                 state = state_1
-                # time.sleep(0.1)
-       
-            # self.episodes_steps_list.append(step_i)
+                # time.sleep(0.1) #slow it down to watch
    
             if e_i % 100 == 0 and e_i != 0:
                 success_percent = sum(self.success[-100:])
                 print("success rate:{} episode:{}".format(success_percent, e_i))
+                self.episode_scores.append(float(success_percent))
+                plot_scores(self.episode_scores, "success rate per 100")
 
 
 def env_factory(name):
     env = None
-
+    print("env name:", name)
     if(name == 'MoveToBeaconPygame'):
         env = MoveToBeaconPygameEnv(grid_size=8)
     else:
@@ -95,10 +77,9 @@ def env_factory(name):
 
 def agent_factory(name, env):
     agent = None
-    if name == 'fl1.Agent':
-        agent = fl1.Agent(env, optimizer_type="Adam")
-    elif name == 'drl.Agent':
-        agent = fl1.Agent(env, optimizer_type="Adam")
+    print("agent name:", name)
+    if name == 'dqn.Agent':
+        agent = dqn.Agent(env, optimizer_type="Adam")
 
     if agent==None:
         raise ValueError("no agent found")
@@ -113,15 +94,14 @@ def main(argv):
 
     parser.add_argument("-i", "--episodes", action="store", default=30000, type=int, dest="episodes", help="episodes")
 
-    parser.add_argument("-a", "--agent", action="store", default="fl1.Agent", dest="agent", help="agent")
-
+    parser.add_argument("-a", "--agent", action="store", default="dqn.Agent", dest="agent", help="agent")
 
     args = parser.parse_args()
 
     # env factory
     env = env_factory(args.env)
     agent = agent_factory(args.agent, env)
-    
+
     print("Action space: ", env.action_space)
     print("Observation space: ", env.observation_space)
     
